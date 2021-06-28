@@ -140,8 +140,8 @@ def start_end_range(start_date, end_date):
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    start_date_results = session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start_date).\
-        group_by(Measurement.date).all()
+    start_date_results = session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+        filter(Measurement.date >= start_date).filter(Measurement.date <= end_date).group_by(Measurement.date).all()
 
     # Close session
     session.close()
@@ -157,17 +157,5 @@ def start_end_range(start_date, end_date):
 
     return jsonify(start_list)
 
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
     app.run(debug=True)
-    
