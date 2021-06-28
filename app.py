@@ -44,7 +44,7 @@ def home_page():
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
         f"/api/v1.0/&lt;start&gt;<br>"
-        f"/api/v1.0/&lt;start&gt;&lt;end&gt;<br>"
+        f"/api/v1.0/&lt;start&gt;/&lt;end&gt;<br>"
     )
 
 @app.route("/api/v1.0/precipitaion")
@@ -118,21 +118,56 @@ def start_range(start_date):
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    start_date_results = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start_date).all()
+    start_date_results = session.query(Measurement.date,func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start_date).\
+        group_by(Measurement.date).all()
 
     # Close session
     session.close()
 
     start_list=[]
-    for min, avg, max in start_date_results:
+    for date, min, avg, max in start_date_results:
         start_dict = {}
+        start_dict["date"] = date
         start_dict["TMIN"] = min
         start_dict["TAVG"] = avg
         start_dict["TMAX"] = max
         start_list.append(start_dict)
         
     return jsonify(start_list)
-        
+
+@app.route("/api/v1.0/<start_date>/<end_date>")
+def start_end_range(start_date, end_date):
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    start_date_results = session.query(Measurement.date, func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start_date).\
+        group_by(Measurement.date).all()
+
+    # Close session
+    session.close()
+
+    start_list = []
+    for date, min, avg, max in start_date_results:
+        start_dict = {}
+        start_dict["date"] = date
+        start_dict["TMIN"] = min
+        start_dict["TAVG"] = avg
+        start_dict["TMAX"] = max
+        start_list.append(start_dict)
+
+    return jsonify(start_list)
+
+
+
+
+
+
+
+
+
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
     
